@@ -30,12 +30,12 @@
         {
             num_orig_x = new NumericUpDown();
             num_scale = new NumericUpDown();
-            numericUpDown3 = new NumericUpDown();
+            num_sides = new NumericUpDown();
             label1 = new Label();
             label2 = new Label();
             label3 = new Label();
             Btn_load_json = new Button();
-            button2 = new Button();
+            btn_generate_regular_polygon = new Button();
             Btn_save_json = new Button();
             label4 = new Label();
             label5 = new Label();
@@ -52,9 +52,13 @@
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
             label11 = new Label();
+            listBoxPoints = new ListBox();
+            btn_fix = new Button();
+            chkbx_GenerateCwPaths = new CheckBox();
+            chkbx_GenerateCcwPaths = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)num_orig_x).BeginInit();
             ((System.ComponentModel.ISupportInitialize)num_scale).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)numericUpDown3).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)num_sides).BeginInit();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)num_orig_y).BeginInit();
             tabControl1.SuspendLayout();
@@ -63,7 +67,7 @@
             // 
             // num_orig_x
             // 
-            num_orig_x.Increment = new decimal(new int[] { 144, 0, 0, 0 });
+            num_orig_x.Increment = new decimal(new int[] { 36, 0, 0, 0 });
             num_orig_x.Location = new Point(55, 23);
             num_orig_x.Maximum = new decimal(new int[] { 1000000, 0, 0, 0 });
             num_orig_x.Minimum = new decimal(new int[] { 1000000, 0, 0, int.MinValue });
@@ -74,7 +78,7 @@
             // 
             // num_scale
             // 
-            num_scale.Increment = new decimal(new int[] { 144, 0, 0, 0 });
+            num_scale.Increment = new decimal(new int[] { 36, 0, 0, 0 });
             num_scale.Location = new Point(55, 50);
             num_scale.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
             num_scale.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
@@ -84,14 +88,14 @@
             num_scale.Value = new decimal(new int[] { 144, 0, 0, 0 });
             num_scale.ValueChanged += num_scale_ValueChanged;
             // 
-            // numericUpDown3
+            // num_sides
             // 
-            numericUpDown3.Location = new Point(60, 15);
-            numericUpDown3.Minimum = new decimal(new int[] { 3, 0, 0, 0 });
-            numericUpDown3.Name = "numericUpDown3";
-            numericUpDown3.Size = new Size(120, 23);
-            numericUpDown3.TabIndex = 2;
-            numericUpDown3.Value = new decimal(new int[] { 3, 0, 0, 0 });
+            num_sides.Location = new Point(60, 15);
+            num_sides.Minimum = new decimal(new int[] { 3, 0, 0, 0 });
+            num_sides.Name = "num_sides";
+            num_sides.Size = new Size(120, 23);
+            num_sides.TabIndex = 2;
+            num_sides.Value = new decimal(new int[] { 3, 0, 0, 0 });
             // 
             // label1
             // 
@@ -130,14 +134,15 @@
             Btn_load_json.UseVisualStyleBackColor = true;
             Btn_load_json.Click += Btn_load_json_Click;
             // 
-            // button2
+            // btn_generate_regular_polygon
             // 
-            button2.Location = new Point(236, 138);
-            button2.Name = "button2";
-            button2.Size = new Size(75, 23);
-            button2.TabIndex = 8;
-            button2.Text = "Generate";
-            button2.UseVisualStyleBackColor = true;
+            btn_generate_regular_polygon.Location = new Point(236, 138);
+            btn_generate_regular_polygon.Name = "btn_generate_regular_polygon";
+            btn_generate_regular_polygon.Size = new Size(75, 23);
+            btn_generate_regular_polygon.TabIndex = 8;
+            btn_generate_regular_polygon.Text = "Generate";
+            btn_generate_regular_polygon.UseVisualStyleBackColor = true;
+            btn_generate_regular_polygon.Click += btn_generate_regular_polygon_Click;
             // 
             // Btn_save_json
             // 
@@ -242,7 +247,7 @@
             // 
             // num_orig_y
             // 
-            num_orig_y.Increment = new decimal(new int[] { 144, 0, 0, 0 });
+            num_orig_y.Increment = new decimal(new int[] { 36, 0, 0, 0 });
             num_orig_y.Location = new Point(121, 23);
             num_orig_y.Maximum = new decimal(new int[] { 1000000, 0, 0, 0 });
             num_orig_y.Minimum = new decimal(new int[] { 1000000, 0, 0, int.MinValue });
@@ -281,9 +286,11 @@
             // 
             // tabPage1
             // 
-            tabPage1.Controls.Add(button2);
+            tabPage1.Controls.Add(chkbx_GenerateCcwPaths);
+            tabPage1.Controls.Add(chkbx_GenerateCwPaths);
+            tabPage1.Controls.Add(btn_generate_regular_polygon);
             tabPage1.Controls.Add(label3);
-            tabPage1.Controls.Add(numericUpDown3);
+            tabPage1.Controls.Add(num_sides);
             tabPage1.Location = new Point(4, 24);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3);
@@ -301,11 +308,55 @@
             label11.TabIndex = 17;
             label11.Text = "link control group to control group (settings for one to all, all to all and one to one,  and bidirectional)";
             // 
+            // listBoxPoints
+            // 
+            listBoxPoints.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            listBoxPoints.FormattingEnabled = true;
+            listBoxPoints.ItemHeight = 15;
+            listBoxPoints.Location = new Point(794, 15);
+            listBoxPoints.Name = "listBoxPoints";
+            listBoxPoints.Size = new Size(302, 424);
+            listBoxPoints.TabIndex = 18;
+            // 
+            // btn_fix
+            // 
+            btn_fix.Location = new Point(12, 68);
+            btn_fix.Name = "btn_fix";
+            btn_fix.Size = new Size(75, 23);
+            btn_fix.TabIndex = 19;
+            btn_fix.Text = "fix ids";
+            btn_fix.UseVisualStyleBackColor = true;
+            btn_fix.Click += btn_fix_Click;
+            // 
+            // chkbx_GenerateCwPaths
+            // 
+            chkbx_GenerateCwPaths.AutoSize = true;
+            chkbx_GenerateCwPaths.Checked = true;
+            chkbx_GenerateCwPaths.CheckState = CheckState.Checked;
+            chkbx_GenerateCwPaths.Location = new Point(12, 44);
+            chkbx_GenerateCwPaths.Name = "chkbx_GenerateCwPaths";
+            chkbx_GenerateCwPaths.Size = new Size(123, 19);
+            chkbx_GenerateCwPaths.TabIndex = 9;
+            chkbx_GenerateCwPaths.Text = "Generate cw paths";
+            chkbx_GenerateCwPaths.UseVisualStyleBackColor = true;
+            // 
+            // chkbx_GenerateCcwPaths
+            // 
+            chkbx_GenerateCcwPaths.AutoSize = true;
+            chkbx_GenerateCcwPaths.Location = new Point(12, 69);
+            chkbx_GenerateCcwPaths.Name = "chkbx_GenerateCcwPaths";
+            chkbx_GenerateCcwPaths.Size = new Size(129, 19);
+            chkbx_GenerateCcwPaths.TabIndex = 10;
+            chkbx_GenerateCcwPaths.Text = "Generate ccw paths";
+            chkbx_GenerateCcwPaths.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(1096, 450);
+            Controls.Add(btn_fix);
+            Controls.Add(listBoxPoints);
             Controls.Add(label11);
             Controls.Add(groupBox1);
             Controls.Add(label9);
@@ -320,7 +371,7 @@
             Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)num_orig_x).EndInit();
             ((System.ComponentModel.ISupportInitialize)num_scale).EndInit();
-            ((System.ComponentModel.ISupportInitialize)numericUpDown3).EndInit();
+            ((System.ComponentModel.ISupportInitialize)num_sides).EndInit();
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)num_orig_y).EndInit();
@@ -335,12 +386,12 @@
 
         private NumericUpDown num_orig_x;
         private NumericUpDown num_scale;
-        private NumericUpDown numericUpDown3;
+        private NumericUpDown num_sides;
         private Label label1;
         private Label label2;
         private Label label3;
         private Button Btn_load_json;
-        private Button button2;
+        private Button btn_generate_regular_polygon;
         private Button Btn_save_json;
         private Label label4;
         private Label label5;
@@ -357,5 +408,9 @@
         private Label lbl_origin;
         private Label lbl_scale;
         private Label label11;
+        private ListBox listBoxPoints;
+        private Button btn_fix;
+        private CheckBox chkbx_GenerateCcwPaths;
+        private CheckBox chkbx_GenerateCwPaths;
     }
 }
