@@ -1,0 +1,194 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:midinous_tools_avalonia.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="midinous_tools_avalonia.Views.MainView"
+             x:DataType="vm:MainViewModel"
+			 x:CompileBindings="True">
+	<!-- <UserControl.Styles>
+		<Style Selector="NumericUpDown">
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border>
+						<StackPanel Orientation="Horizontal">
+							<TextBox x:Name="PART_TextBox" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+							<StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+								<Button x:Name="PART_IncreaseButton" Content="▲" HorizontalAlignment="Stretch" Height="15"/>
+								<Button x:Name="PART_DecreaseButton" Content="▼" HorizontalAlignment="Stretch" Height="15"/>
+							</StackPanel>
+						</StackPanel>
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+	</UserControl.Styles> -->
+	<UserControl.Resources>
+		<!--  Add the MathMultiConverter  -->
+		<vm:MathMultiConverter x:Key="MathMultiConverter" />
+		<x:Decimal x:Key="MyConverterParameter">36</x:Decimal>
+	</UserControl.Resources>
+	<UserControl.Styles>
+		<SimpleTheme />
+
+
+		<Style Selector="TabItem">
+			<Setter Property="FontSize" Value="30"/>
+			<Setter Property="VerticalAlignment" Value="Center"/>
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="Foreground" Value="DarkViolet"/>
+			<Setter Property="Margin" Value="0 0 0 0"/>
+			<Setter Property="Padding" Value="10 0"/>
+			<Setter Property="CornerRadius" Value="5"/>
+		</Style>
+		<Style Selector="TabItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="Opacity" Value="0.5"/>
+		</Style>
+		<Style Selector="TabItem:focus">
+			<Setter Property="Foreground" Value="#2B579A"/>
+			<Setter Property="Margin" Value="0 0 0 0"/>
+			<Setter Property="Padding" Value="10 0"/>
+		</Style>
+		<Style Selector="TabItem:focus /template/ ContentPresenter#PART_ContentPresenter">
+			
+			<Setter Property="Background" Value="Black"/>
+		</Style>
+
+		<Style Selector="TabItem:selected">
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="BorderBrush" Value="DarkViolet"/>
+			<Setter Property="BorderThickness" Value="1"/>
+			<Setter Property="Margin" Value="0 0 0 0"/>
+			<Setter Property="Padding" Value="10 0"/>
+		</Style>
+		<Style Selector="TabItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="Transparent"/>
+		</Style>
+
+	</UserControl.Styles>
+
+	<Design.DataContext>
+		<!-- This only sets the DataContext for the previewer in an IDE,
+         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+		<vm:MainViewModel />
+	</Design.DataContext>
+	<Grid ShowGridLines="False" Margin="5"
+      ColumnDefinitions="Auto, 20, 300"
+      RowDefinitions="Auto, 20, Auto">
+		<Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5" CornerRadius="5" Command="{Binding Cmd_LoadJson_OnClick}">Load Json</Button>
+		<Button Grid.Row="0" Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5" CornerRadius="5" Command="{Binding Cmd_SaveJson_OnClick}">
+			Save Json 
+			<FlyoutBase.AttachedFlyout>
+				<Flyout Placement="Right" >This is the button flyout.</Flyout>
+			</FlyoutBase.AttachedFlyout>
+		</Button>
+		<StackPanel Grid.Row="2" Grid.Column="0">
+			<Button  HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5" CornerRadius="5" Command="{Binding Cmd_FixIds_OnClick}">Fix Ids</Button>
+			<Button  HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5" CornerRadius="5" Command="{Binding Cmd_Merge_OnClick}">Add Json</Button>
+			<Button  HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5" CornerRadius="5" Command="{Binding Cmd_Offset_OnClick}">Offset</Button>
+		</StackPanel>
+		<StackPanel Grid.Row="2" Grid.Column="2">
+			<StackPanel Orientation="Horizontal">
+				<Label VerticalAlignment="Center">Offset</Label>
+				<!--X Y-->
+				<Grid Margin="5"
+				  ColumnDefinitions="Auto, Auto"
+				  RowDefinitions="Auto, Auto, Auto">
+					<NumericUpDown x:Name="Offset_x" Grid.Row="0" Grid.Column="0" FormatString="{}{0:0.}" Value="{Binding Offset_x}" Increment="36" MinHeight="20"  Width="80" Background="Transparent"  Margin="5,0" CornerRadius="5" HorizontalContentAlignment="Right" />
+					<NumericUpDown x:Name="Offset_y" Grid.Row="0" Grid.Column="1" FormatString="{}{0:0.}" Value="{Binding Offset_y}" Increment="36" MinHeight="20"  Width="80" Background="Transparent"  Margin="5,0" CornerRadius="5" HorizontalContentAlignment="Right"/>
+				</Grid>
+				<Label  VerticalAlignment="Center">
+					<Label.Content>
+					<MultiBinding StringFormat="({0:0.0}, {1:0.0})">
+						<Binding Path="Value" ElementName="Offset_x" Converter="{StaticResource MathMultiConverter}" ConverterParameter="{StaticResource MyConverterParameter}"/>
+						<Binding Path="Value" ElementName="Offset_y" Converter="{StaticResource MathMultiConverter}" ConverterParameter="{StaticResource MyConverterParameter}"/>
+					</MultiBinding>
+					</Label.Content>
+				</Label>
+
+			</StackPanel>
+		<Border BorderBrush="DeepSkyBlue" BorderThickness="0" Margin="5 20" CornerRadius="5" BoxShadow="0 0 10 2 DarkViolet">
+			<!--Generation Box-->
+			<Panel>
+				<ExperimentalAcrylicBorder IsHitTestVisible="False" CornerRadius="5">
+					<ExperimentalAcrylicBorder.Material>
+						<ExperimentalAcrylicMaterial
+							BackgroundSource="Digger"
+							TintColor="Purple"
+							TintOpacity="0.5"
+							MaterialOpacity="0.065" />
+					</ExperimentalAcrylicBorder.Material>
+				</ExperimentalAcrylicBorder>
+			<StackPanel Background="{OnPlatform Default='Black', Windows='Transparent', Linux='Black'}">
+					
+				<Label Margin="5 -13 0 -5" HorizontalAlignment="Left" CornerRadius="5" >Generation</Label>
+				
+				<Grid Margin="5"
+					  ColumnDefinitions="50, Auto, Auto"
+					  RowDefinitions="Auto, Auto, Auto">
+
+
+					<!--Scale-->
+					<Label Grid.Row="1" Grid.Column="0" VerticalAlignment="Center">Scale</Label>
+					<NumericUpDown x:Name="scale" Grid.Row="1" Grid.Column="1" Value="{Binding scale}" Increment="36" Background="Transparent"  MinHeight="20"  Width="170" Margin="5" CornerRadius="5" HorizontalContentAlignment="Right"/>
+					<Label Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" ><Label.Content>
+					<MultiBinding StringFormat="({0:0.0})">
+						<Binding Path="Value" ElementName="scale" Converter="{StaticResource MathMultiConverter}" ConverterParameter="{StaticResource MyConverterParameter}"/>
+						
+					</MultiBinding>
+					</Label.Content>
+				</Label>
+					
+					<Label Grid.Row="2" Grid.Column="0" VerticalAlignment="Center">Type</Label>
+					<ComboBox Grid.Row="2" Grid.Column="1" MinHeight="20"  Width="170" AutoScrollToSelectedItem="True" SelectedIndex="{Binding pointType}" Background="Transparent"  Margin="5" CornerRadius="5" HorizontalContentAlignment="Right">
+						<ComboBoxItem HorizontalAlignment="Right"  Background="Transparent" >
+							Note
+						</ComboBoxItem>
+						<ComboBoxItem HorizontalAlignment="Right"  Background="Transparent" >
+							CC
+						</ComboBoxItem>
+						<ComboBoxItem HorizontalAlignment="Right"  Background="Transparent" >
+							Logic
+						</ComboBoxItem>
+					</ComboBox>
+					<!--<NumericUpDown Grid.Row="2" Grid.Column="1" Value="0.0" Increment="36" MinHeight="20"  Width="170" Margin="5" HorizontalContentAlignment="Right"/>-->
+				</Grid>
+				<TabControl Margin="4" >
+
+					<TabItem Header="⬟"  CornerRadius="5" HeaderTemplate="">
+						<Border CornerRadius="5" >
+							<Panel>
+								<ExperimentalAcrylicBorder IsHitTestVisible="False" CornerRadius="5">
+									<ExperimentalAcrylicBorder.Material>
+										<ExperimentalAcrylicMaterial
+											BackgroundSource="Digger"
+											TintColor="Purple"
+											TintOpacity="0.5"
+											MaterialOpacity="0.165" />
+									</ExperimentalAcrylicBorder.Material>
+								</ExperimentalAcrylicBorder>
+							<StackPanel Background="{OnPlatform Default='Black', Windows='Transparent', Linux='#1F1F1F'}">
+								<StackPanel Orientation="Horizontal">
+									<Label  VerticalAlignment="Center" Width="50" Margin="0 5 5 5">Sides</Label>
+									<NumericUpDown Value="{Binding sides}" Minimum="3" Increment="1" Background="Transparent" MinHeight="20"  Width="120" Margin="5" CornerRadius="5" HorizontalContentAlignment="Right"/>
+								</StackPanel>
+								<CheckBox Margin="5" CornerRadius="5" IsChecked="{Binding Gen_CW}">Generate clockwise paths</CheckBox>
+								<CheckBox Margin="5" CornerRadius="5" IsChecked="{Binding Gen_CCW}">Generate counterclockwise paths</CheckBox>
+								<Button VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="5 0 5 10" CornerRadius="5" Command="{Binding Cmd_GenerateRegularPoly_OnClick}">Generate</Button>
+							</StackPanel>
+							</Panel>
+						</Border>
+					</TabItem>
+					<TabItem Header="⸎〄ꗈ"></TabItem>
+				</TabControl>
+			</StackPanel>
+			</Panel>
+		</Border>
+		</StackPanel>
+	</Grid>
+	<!--<TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>-->
+
+</UserControl>

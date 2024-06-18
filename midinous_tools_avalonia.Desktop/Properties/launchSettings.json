@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "midinous_tools_avalonia.Desktop": {
+      "commandName": "Project"
+    },
+    "WSL": {
+      "commandName": "WSL2",
+      "distributionName": ""
+    }
+  }
+}

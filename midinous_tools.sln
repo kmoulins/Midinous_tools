@@ -3,7 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34525.116
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "midinous_tools", "midinous_tools\midinous_tools.csproj", "{4C26CAD8-1DE4-4D34-AD67-825A9C00EB87}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "midinous_tools_winforms", "midinous_tools\midinous_tools_winforms.csproj", "{4C26CAD8-1DE4-4D34-AD67-825A9C00EB87}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "midinous_core", "midinous_core\midinous_core.csproj", "{225380D7-8A86-4021-8D7F-5CE5F9C541EE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "midinous_tools_avalonia", "midinous_tools_avalonia\midinous_tools_avalonia.csproj", "{A03A7C43-FABB-46F7-883D-F2FE986B8090}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "midinous_tools_avalonia.Desktop", "midinous_tools_avalonia.Desktop\midinous_tools_avalonia.Desktop.csproj", "{41EDA7CF-F1A8-406C-BDE0-50A76914AEFC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "midinous_tools_avalonia.Browser", "midinous_tools_avalonia.Browser\midinous_tools_avalonia.Browser.csproj", "{742FFF79-0CD3-4670-9A35-D33F659FD542}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +23,22 @@ Global
 		{4C26CAD8-1DE4-4D34-AD67-825A9C00EB87}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4C26CAD8-1DE4-4D34-AD67-825A9C00EB87}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4C26CAD8-1DE4-4D34-AD67-825A9C00EB87}.Release|Any CPU.Build.0 = Release|Any CPU
+		{225380D7-8A86-4021-8D7F-5CE5F9C541EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{225380D7-8A86-4021-8D7F-5CE5F9C541EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{225380D7-8A86-4021-8D7F-5CE5F9C541EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{225380D7-8A86-4021-8D7F-5CE5F9C541EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A03A7C43-FABB-46F7-883D-F2FE986B8090}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A03A7C43-FABB-46F7-883D-F2FE986B8090}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A03A7C43-FABB-46F7-883D-F2FE986B8090}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A03A7C43-FABB-46F7-883D-F2FE986B8090}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41EDA7CF-F1A8-406C-BDE0-50A76914AEFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41EDA7CF-F1A8-406C-BDE0-50A76914AEFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41EDA7CF-F1A8-406C-BDE0-50A76914AEFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41EDA7CF-F1A8-406C-BDE0-50A76914AEFC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{742FFF79-0CD3-4670-9A35-D33F659FD542}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{742FFF79-0CD3-4670-9A35-D33F659FD542}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{742FFF79-0CD3-4670-9A35-D33F659FD542}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{742FFF79-0CD3-4670-9A35-D33F659FD542}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

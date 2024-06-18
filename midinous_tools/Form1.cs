@@ -94,7 +94,7 @@ namespace midinous_tools
 
         private void btn_generate_regular_polygon_Click(object sender, EventArgs e)
         {
-            savefile.generate_poly_points((int)num_scale.Value, (int)num_sides.Value, ((double)num_orig_x.Value, (double)num_orig_y.Value),chkbx_GenerateCwPaths.Checked,chkbx_GenerateCcwPaths.Checked);
+            savefile.generate_poly_points((int)num_scale.Value, (int)num_sides.Value, ((double)num_orig_x.Value, (double)num_orig_y.Value),cmb_pointType.SelectedIndex,chkbx_GenerateCwPaths.Checked,chkbx_GenerateCcwPaths.Checked);
 
             listBoxPoints.DataSource = savefile.lines_point;
             listBoxPoints.Refresh();

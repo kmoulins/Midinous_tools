@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using System.Globalization;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Text.Json.Serialization;
+using System.Drawing;
 
 namespace midinous_tools
 {
@@ -18,18 +18,52 @@ namespace midinous_tools
         public List<string> lines_json = new List<string>();
         public List<mn_point> lines_point = new List<mn_point>();
         public List<mn_path> lines_paths = new List<mn_path>();
+
+        public void CreateDefaultLines()
+        {
+            string version = "{\"Type\":0,\"JSON\":\"\\\"1.2.0.1\\\"\"}";
+            string settings = "{\"Type\":6,\"JSON\":\"{\\\"tempo\\\":120.0,\\\"grid_size\\\":4,\\\"beat_division\\\":4,\\\"beat_division_selector_index\\\":1,\\\"doc_scale\\\":1,\\\"scale_selector_index\\\":0,\\\"doc_root\\\":1,\\\"root_selector_index\\\":0,\\\"clock_source\\\":2,\\\"camera_position\\\":\\\"0, 0\\\"}\"}";
+            lines_json.Add(version);
+            lines_json.Add(settings);
+        }
         public void LoadJson(string[] lines)
         {
-            Regex r = new Regex("^{\\s*\"Type\"\\s*:\\s*([1235])");
+           // Regex r = new Regex("^{\\s*\"Type\"\\s*:\\s*([1235])");
             foreach (var line in lines)
             {
-                var match = r.Match(line);
+
+                var jsonObject = JsonDocument.Parse(line).RootElement;
+                int type = -1;
+                bool isOk = jsonObject.GetProperty("Type").TryGetInt32(out type);
+                string json = jsonObject.GetProperty("JSON").ToString();
+                if (isOk&&json!="")
+                {
+                    switch (type)
+                    {
+                        case 1://note
+                        case 2://cc
+                        case 3://logic
+                            mn_point? pt = mn_point.Deserialize(type,json);
+                            if (pt!=null)
+                            {
+                                lines_point.Add(pt);
+                            }
+                            break;
+                        case 5://path
+                            mn_path pa = mn_path.Deserialize(type, json);
+                            lines_paths.Add(pa);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+               /*var match = r.Match(line);
                 if (match.Success&&match.Groups.Count>1)
                 {
                     var type = match.Groups[1];
                     if (type.Value=="5")
                     {
-                        mn_path p=mn_path.Deserialize(line);
+                        mn_path p=mn_path.Deserialize(type,line);
                         lines_paths.Add(p);
                     }
                     else
@@ -41,7 +75,7 @@ namespace midinous_tools
                 else
                 {
                     lines_json.Add(line);
-                }
+                }*/
             }
 
         }
@@ -60,7 +94,7 @@ namespace midinous_tools
             {
                 save_data += line.Serialize() + "\r\n";
             }
-            return save_data;
+            return save_data.Replace("\\u0022", "\\\"");//prettify the way double quotes are escaped
         }
 
 
@@ -90,7 +124,7 @@ namespace midinous_tools
 
             return points;
         }
-        public void generate_poly_points(double sideLength, int numberOfSides, (double, double) origin, bool Path_cw=true, bool Path_ccw=false)
+        public void generate_poly_points(double sideLength, int numberOfSides, (double, double) origin, int Type, bool Path_cw=true, bool Path_ccw=false)
         {
             var points = GeneratePolygonPoints(sideLength,numberOfSides,origin);
             int startId = this.getMaxId()+1;
@@ -99,7 +133,8 @@ namespace midinous_tools
 
             foreach (var point in points)
             {
-                mn_note note = new mn_note(i, "", (int)point.Item1, (int)point.Item2);
+                mn_point note=mn_point.makeByType(Type,i, (int)point.Item1, (int)point.Item2);
+
                 int from = j == 0 ? (startId + numberOfSides - 1) : (i - 1);
                 int to = j == (numberOfSides - 1) ? (startId) : (i + 1);
                 //lines_paths.Add(new mn_path(from, i, false));
@@ -122,15 +157,18 @@ namespace midinous_tools
             }
         }
 
-        public void reset_Ids()
+        public void reset_Ids(int offset=0)
         {
             Dictionary<int,int> oldIds = new Dictionary<int,int>();
             lines_point=lines_point.OrderBy(e => e.Type).ToList();
+            //set IDs
             for (int i = 0; i < lines_point.Count; i++)
             {
-                oldIds[lines_point[i].id] = i;
-                lines_point[i].id = i;
+                oldIds[lines_point[i].id] = i+offset;
+                lines_point[i].id = i+offset;
             }
+
+            //set paths to the correct IDs
             for (int i = 0; i < lines_point.Count; i++)
             {
                 for (int j = 0; j < lines_point[i].SerializableLogicPathFrom.Count; j++)
@@ -167,6 +205,24 @@ namespace midinous_tools
                 return 0;
             return lines_point.OrderBy(e => e.id).Last().id;
         }
+
+        public void offsetPoints(int x,int y)
+        {
+            foreach (var item in lines_point)
+            {
+                item.offset(x, y);
+            }
+        }
+        public void Add(mn_json mn_jsonToAdd,int x=0,int y=0)
+        {
+            mn_jsonToAdd.reset_Ids(this.getMaxId()+1);
+            if (x != 0 || y != 0)
+            {
+                mn_jsonToAdd.offsetPoints(x, y);
+            }
+            this.lines_point.AddRange(mn_jsonToAdd.lines_point);
+            this.lines_paths.AddRange(mn_jsonToAdd.lines_paths);
+        }
     }
 
     public class mn_path
@@ -183,9 +239,11 @@ namespace midinous_tools
         {
             return this.Serialize();
         }
+        /*
         public mn_path(int type, string json) 
         {
-            dynamic data = JsonConvert.DeserializeObject(json);
+           
+            dynamic data = JsonSerializer.Deserialize<mn_path>(json);
             this.Type=type;
             this.source_id=data.source_id;
             this.target_id=data.target_id;
@@ -193,7 +251,9 @@ namespace midinous_tools
             this.logic = data.logic;
             this.Mode = data.Mode;
         }
-
+        */
+        [System.Text.Json.Serialization.JsonConstructor]
+        public mn_path() { }
         public mn_path(int from, int to, bool logic,int Mode=2)
         {
             this.Type = 5;
@@ -204,16 +264,12 @@ namespace midinous_tools
             this.Mode = Mode;
         }
 
-        public static mn_path Deserialize(string jsonString)
+        public static mn_path? Deserialize(int type,string json)
         {
-            var jsonObject = JObject.Parse(jsonString);
-            int type = jsonObject["Type"].Value<int>();
-            string json = jsonObject["JSON"].ToString();
-
             switch (type)
             {
                 case 5:
-                    return new mn_path(type, json);
+                    return JsonSerializer.Deserialize<mn_path>(json); //new mn_path(type, json);
                 default:
                     throw new ArgumentException("Invalid Type");
             }
@@ -222,12 +278,12 @@ namespace midinous_tools
         {
             string json = System.Text.Json.JsonSerializer.Serialize<mn_path>(this);
 
-            var jsonObject = new JObject
+            var jsonObject = new
             {
-                { "Type", this.Type },
-                { "JSON", json }
+                Type = this.Type,
+                JSON = json
             };
-            return jsonObject.ToString(Formatting.None);
+            return JsonSerializer.Serialize(jsonObject, new JsonSerializerOptions{WriteIndented = false});
         }
     }
 
@@ -251,7 +307,9 @@ namespace midinous_tools
         public List<int> SerializableLogicPathTo { get; set; }
         public List<int> SerializableLogicPathFrom { get; set; }
 
-        public mn_point() { }
+        [System.Text.Json.Serialization.JsonConstructor]
+        public mn_point() {
+        }
 
         public mn_point(int type)
         {
@@ -261,6 +319,36 @@ namespace midinous_tools
         {
             this.Type = type;
             this.JSON = json;
+        }
+
+        public mn_point(int type, int id, string label, int x, int y) : this(type)
+        {
+            this.id = id;
+            this.label = label;
+            this.color = new Color();
+            this.group_data = new GroupData();
+            this.Origin = "" + x + ", " + y;
+            this.PathMode = 2;
+            this.SignalMode = 0;
+            this.SerializablePathTo = new List<int>();
+            this.SerializablePathFrom = new List<int>();
+            this.SerializableLogicPathTo = new List<int>();
+            this.SerializableLogicPathFrom = new List<int>();
+        }
+
+        public static mn_point makeByType(int Type,int id, int x=0, int y=0)
+        {            
+            switch (Type)
+            {
+                case 1:
+                    return new mn_note(id, "", x,y);
+                case 2:
+                    return new mn_cc(id, "", x, y);
+                case 3:
+                    return new mn_logic(id, "", x, y);
+                default:
+                    return null;
+            }
         }
         public override string ToString()
         {
@@ -272,42 +360,60 @@ namespace midinous_tools
             switch (this.Type)
             {
                 case 1:
-                    json = System.Text.Json.JsonSerializer.Serialize<mn_note>((mn_note)this);
+                    json = JsonSerializer.Serialize<mn_note>((mn_note)this);
                     break;
                 case 2:
-                    json = System.Text.Json.JsonSerializer.Serialize<mn_cc>((mn_cc)this);
+                    json = JsonSerializer.Serialize<mn_cc>((mn_cc)this);
                     break;
                 case 3:
-                    json = System.Text.Json.JsonSerializer.Serialize<mn_logic>((mn_logic)this);
+                    json = JsonSerializer.Serialize<mn_logic>((mn_logic)this);
                     break;
                 default:
                     throw new ArgumentException("Invalid Type");
             }
-            var jsonObject = new JObject
+
+            var jsonObject = new
             {
-                { "Type", this.Type },
-                { "JSON", json }
+                Type = this.Type,
+                JSON = json
             };
-            return jsonObject.ToString(Formatting.None);
+            return JsonSerializer.Serialize(jsonObject, new JsonSerializerOptions { WriteIndented = false });
         }
 
-        public static mn_point Deserialize(string jsonString)
+        public static mn_point? Deserialize(int type, string json)
         {
-            var jsonObject = JObject.Parse(jsonString);
-            int type = jsonObject["Type"].Value<int>();
-            string json = jsonObject["JSON"].ToString();
-
             switch (type)
             {
                 case 1:
-                    return new mn_note(type, json);
+                    return JsonSerializer.Deserialize<mn_note>(json);// new mn_note(type, json); 
                 case 2:
-                    return new mn_cc(type, json);
+                    return JsonSerializer.Deserialize<mn_cc>(json);//new mn_cc(type, json);
                 case 3:
-                    return new mn_logic(type, json);
+                    return JsonSerializer.Deserialize<mn_logic>(json);// new mn_logic(type, json);
                 default:
                     throw new ArgumentException("Invalid Type");
             }
+        }
+
+
+        //check is a function that takes x and y should return true if the note at that point should be 
+        internal void offset(int x, int y, Func<int, int, bool>? check = null)
+        {
+            //TODO convert to double
+            var xy=Origin.Split(',');
+            if(xy.Length == 2)
+            {
+                int _x, _y;
+                if(int.TryParse(xy[0], out _x) && int.TryParse(xy[1], out _y))
+                {
+                    if (check == null || check(x, y))
+                    {
+                        Origin = "" + (_x + x) + "," + (_y + y);
+                    }
+                }
+            }
+            
+
         }
     }
 
@@ -321,7 +427,11 @@ namespace midinous_tools
         public bool pass { get; set; }
         public bool start { get; set; }
 
-        public mn_note(int id, string label, int x, int y) : base(1)
+        [JsonConstructor]
+        public mn_note() : base(){ 
+            this.Type = 1;
+        }
+        public mn_note(int id, string label, int x, int y) : base(1,id,label,x,y)
         {
             this.force_scale = false;
             this.probability = 100;
@@ -329,74 +439,35 @@ namespace midinous_tools
             this.relative_midi_data = new RelativeMidiData();
             this.mute = false;
             this.pass = false;
-            this.id = id;
-            this.label = "label";
-            this.color = new Color();
-            this.group_data = new GroupData();
             this.start = false;
-            this.Origin = "" + x + ", " + y;
-            this.PathMode = 2;
-            this.SignalMode = 0;
-            this.SerializablePathTo = new List<int>();
-            this.SerializablePathFrom = new List<int>();
-            this.SerializableLogicPathTo = new List<int>();
-            this.SerializableLogicPathFrom = new List<int>();
         }
 
-        public mn_note(int type, string json) : base(type, json)
-        {
-            dynamic data = JsonConvert.DeserializeObject(json);
-            this.force_scale = data.force_scale;
-            this.probability = data.probability;
-            this.midi_data = data.midi_data.ToObject<MidiData>();
-            this.relative_midi_data = data.relative_midi_data.ToObject<RelativeMidiData>();
-            this.mute = data.mute;
-            this.pass = data.pass;
-            this.id = data.id;
-            this.label = data.label;
-            this.color = data.color.ToObject<Color>();
-            this.group_data = data.group_data.ToObject<GroupData>();
-            this.start = data.Start;
-            this.Origin = data.Origin;
-            this.PathMode = data.PathMode;
-            this.SignalMode = data.SignalMode;
-            this.SerializablePathTo = data.SerializablePathTo.ToObject<List<int>>();
-            this.SerializablePathFrom = data.SerializablePathFrom.ToObject<List<int>>();
-            this.SerializableLogicPathTo = data.SerializableLogicPathTo.ToObject<List<int>>();
-            this.SerializableLogicPathFrom = data.SerializableLogicPathFrom.ToObject<List<int>>();
-        }
     }
 
     public class mn_cc : mn_point
     {
-        public bool SlewMode { get; set; }
-        public int SlewValue { get; set; }
-        public MidiData MidiData { get; set; }
-        public RelativeMidiData RelativeMidiData { get; set; }
-        public bool Mute { get; set; }
-        public bool Pass { get; set; }
+        public bool slew_mode { get; set; }
+        public int slew_value { get; set; }
+        public MidiData midi_data { get; set; }
+        public RelativeMidiData relative_midi_data { get; set; }
+        public bool mute { get; set; }
+        public bool pass { get; set; }
         public bool Start { get; set; }
-        public mn_cc(int type, string json) : base(type, json)
+
+        [JsonConstructor]
+        public mn_cc() : base()
         {
-            dynamic data = JsonConvert.DeserializeObject(json);
-            this.SlewMode = data.slew_mode;
-            this.SlewValue = data.slew_value;
-            this.MidiData = data.midi_data.ToObject<MidiData>();
-            this.RelativeMidiData = data.relative_midi_data.ToObject<RelativeMidiData>();
-            this.Mute = data.mute;
-            this.Pass = data.pass;
-            this.id = data.id;
-            this.label = data.label;
-            this.color = data.color.ToObject<Color>();
-            this.group_data = data.group_data.ToObject<GroupData>();
-            this.Start = data.Start;
-            this.Origin = data.Origin;
-            this.PathMode = data.PathMode;
-            this.SignalMode = data.SignalMode;
-            this.SerializablePathTo = data.SerializablePathTo.ToObject<List<int>>();
-            this.SerializablePathFrom = data.SerializablePathFrom.ToObject<List<int>>();
-            this.SerializableLogicPathTo = data.SerializableLogicPathTo.ToObject<List<int>>();
-            this.SerializableLogicPathFrom = data.SerializableLogicPathFrom.ToObject<List<int>>();
+            this.Type = 2;
+        }
+        public mn_cc(int id, string label, int x, int y) : base(2,id,label,x,y)
+        {
+            this.slew_mode = false;
+            this.slew_value = 0;
+            this.midi_data = new MidiData();
+            this.relative_midi_data = new RelativeMidiData();
+            this.mute = false;
+            this.pass = false;
+            this.Start = false;
         }
     }
 
@@ -407,24 +478,17 @@ namespace midinous_tools
         public bool send_color { get; set; }
         public int Gate { get; set; }
 
-        public mn_logic(int type, string json) : base(type, json)
+        [JsonConstructor]
+        public mn_logic() : base()
         {
-            dynamic data = JsonConvert.DeserializeObject(json);
-            this.provision = data.provision;
-            this.negated = data.negated;
-            this.send_color = data.send_color;
-            this.id = data.id;
-            this.label = data.label;
-            this.color = data.color.ToObject<Color>();
-            this.group_data = data.group_data.ToObject<GroupData>();
-            this.Gate = data.Gate;
-            this.Origin = data.Origin;
-            this.PathMode = data.PathMode;
-            this.SignalMode = data.SignalMode;            
-            this.SerializablePathTo = data.SerializablePathTo.ToObject<List<int>>();
-            this.SerializablePathFrom = data.SerializablePathFrom.ToObject<List<int>>();
-            this.SerializableLogicPathTo = data.SerializableLogicPathTo.ToObject<List<int>>();
-            this.SerializableLogicPathFrom = data.SerializableLogicPathFrom.ToObject<List<int>>();
+            this.Type = 3;
+        }
+        public mn_logic(int id, string label, int x, int y) : base(3, id, label, x, y)
+        {
+            this.provision = 0;
+            this.negated = false;
+            this.send_color = false;
+            this.Gate = 0;
         }
     }
 
